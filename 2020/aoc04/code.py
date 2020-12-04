@@ -1,24 +1,7 @@
 import re 
 
 with open('input.txt', 'r') as reader:
-    passportsStr = []
-    lines = reader.readlines()
-    passportStr = ''
-    for line in lines:
-        if line == '\n':
-            passportsStr.append(passportStr)
-            passportStr = ''
-            continue
-        passportStr += line
-    
-    if passportStr != '':
-        passportsStr.append(passportStr)
-
-    passports = []
-    for passportStr in passportsStr:
-        passport = {match[0]: match[1] for match in re.findall(r'(\S+):(\S+)', passportStr)}
-        passports.append(passport)
-
+    passports = [{match[0]: match[1] for match in re.findall(r'(\S+):(\S+)', passport)} for passport in reader.read().split("\n\n")]
 
 
 def part1():
