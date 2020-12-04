@@ -3,61 +3,31 @@ import re
 with open('input.txt', 'r') as reader:
     passports = [{match[0]: match[1] for match in re.findall(r'(\S+):(\S+)', passport)} for passport in reader.read().split("\n\n")]
 
+def check_height(hgt):
+    m = re.match(r'^(\d+)(cm|in)$', hgt)
+    return m and {
+        'cm': lambda height: 150 <= int(height) <= 193,
+        'in': lambda height: 59 <= int(height) <= 76
+    }[m.group(2)](m.group(1))
+ 
+FIELD_CHECKS = {
+    'byr' : lambda byr: 1920 <= int(byr) <= 2002,
+    'iyr' : lambda iyr: 2010 <= int(iyr) <= 2020,
+    'eyr' : lambda eyr: 2020 <= int(eyr) <= 2030,
+    'hgt' : check_height,
+    'hcl' : lambda hcl: re.match(r'^#[0-9a-f]{6}$', hcl) is not None,
+    'ecl' : lambda ecl: ecl in {'amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'},
+    'pid' : lambda pid: re.match(r'^\d{9}$', pid) is not None
+}
+
+def check_required_fields(passport):
+    return set(FIELD_CHECKS) - set(passport) | {'cid'} == {'cid'}
 
 def part1():
-    count = 0
-    for passport in passports:
-        if len(passport) == 8 or (len(passport) == 7 and 'cid' not in passport):
-            count += 1
-    return count
+    return sum(check_required_fields(passport) for passport in passports)
 
-def part2(): 
-    count = 0
-    for passport in passports:
-        if (checkRequiredFields(passport)
-        and checkPassportLength(passport)
-        and checkByr(int(passport['byr'])) 
-        and checkIyr(int(passport['iyr'])) 
-        and checkEyr(int(passport['eyr'])) 
-        and checkHgt(passport['hgt']) 
-        and checkHcl(passport['hcl']) 
-        and checkEcl(passport['ecl']) 
-        and checkPid(passport['pid'])):
-            count += 1
-
-    return count
-
-def checkRequiredFields(passport):
-    return len(set(passport.keys()).intersection({'byr', 'iyr', 'eyr', 'hgt', 'hcl', 'ecl', 'pid'})) == 7
-
-def checkPassportLength(passport):
-    return len(passport) == 7 or (len(passport) == 8 and 'cid' in passport)
-
-def checkByr(byr):
-    return 1920 <= byr and byr <= 2002
-
-def checkIyr(iyr):
-    return 2010 <= iyr and iyr <= 2020
-
-def checkEyr(eyr):
-    return 2020 <= eyr and eyr <= 2030
-
-def checkHgt(hgt):
-    hgtm = re.match(r'^(\d+)(cm|in)$', hgt)
-    if hgtm is None:
-        return False
-    heightValue = int(hgtm.group(1))
-    heightUnit = hgtm.group(2)
-    return (heightUnit == 'cm' and 150 <= heightValue and heightValue <= 193) or (heightUnit == 'in' and 59 <= heightValue and heightValue <= 76)
-
-def checkHcl(hcl): 
-    return re.match(r'^#[0-9a-f]{6}$', hcl) is not None
-
-def checkEcl(ecl): 
-    return re.match(r'^amb|blu|brn|gry|grn|hzl|oth$', ecl) is not None
-
-def checkPid(pid): 
-    return re.match(r'^\d{9}$', pid) is not None
+def part2():
+    return sum(check_required_fields(passport) and all(FIELD_CHECKS[field](passport[field]) for field in FIELD_CHECKS) for passport in passports)
 
 print(part1())
 print(part2())
