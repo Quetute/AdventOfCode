@@ -1,13 +1,8 @@
 import re
 from functools import lru_cache
 
-def parse_rule(rule):
-    bag = re.match(r'^\w+ \w+', rule).group(0)
-    contents = re.findall(r'(\d+) (\w+ \w+)', rule)
-    return (bag, {content[1]: content[0] for content in contents})
-
 with open("input.txt", 'r') as reader:
-    rules = dict(map(parse_rule, reader.readlines()))
+    rules = {re.match(r'^\w+ \w+', rule).group(0): {content[1]: content[0] for content in re.findall(r'(\d+) (\w+ \w+)', rule)} for rule in reader.readlines()}
 
 @lru_cache(None)
 def can_reach(source, dest):
