@@ -6,19 +6,16 @@ with open('input.txt', 'r') as reader:
 def next_state(state, x, y, seat_count_func, max_seat):
     if state[y][x] == '.': return '.'
     count = seat_count_func(state, x, y)
-    if state[y][x] == 'L':
-        return '#' if count == 0 else 'L'
-    if state[y][x] == '#':
-        return '#' if count < max_seat else 'L'
+    if state[y][x] == 'L': return '#' if count == 0 else 'L'
+    if state[y][x] == '#': return '#' if count < max_seat else 'L'
 
 def next_round(state, seat_count_func, max_seat):
-    return [[next_state(state, x, y, seat_count_func, max_seat) for x in range(0, x_max)] for y in range(0, y_max)]
+    return [[next_state(state, x, y, seat_count_func, max_seat) for x in range(x_max)] for y in range(y_max)]
 
 def get_final_round_count(seat_count_func, max_seat):
     curr = layout
     while True: 
-        next = next_round(curr, seat_count_func, max_seat)
-        if curr == next: return sum(c == '#' for line in next for c in line) 
+        if (next:= next_round(curr, seat_count_func, max_seat)) == curr: return sum(c == '#' for line in next for c in line) 
         curr = next
 
 def part1():
@@ -29,17 +26,12 @@ def part2():
     def seat_count_func(state,x,y):
         funcs = [lambda i: i + 1, lambda i: i - 1, lambda i: i]
         count = 0
-        for f_y in funcs:
-            for f_x in funcs:
+        for f_x in funcs:
+            for f_y in funcs:
                 if f_x == f_y == funcs[2]: continue
                 i, j = f_x(x), f_y(y)
-                while 0 <= i < x_max and 0 <= j < y_max:
-                    c = state[j][i]
-                    if c in ['#', 'L']:
-                        if c == '#':
-                            count += 1
-                        break
-                    i, j = f_x(i), f_y(j)
+                while (valid:=(i in range(x_max) and j in range(y_max))) and (c:= state[j][i]) == '.': i, j = f_x(i), f_y(j)
+                if valid and c == '#': count += 1
         return count
     return get_final_round_count(seat_count_func, 5)
         
