@@ -39,23 +39,14 @@ def part1():
 
 def part2():
     valid_tickets = [ticket for ticket in nearby_tickets if len(list(invalid_values(ticket))) == 0]
-    possible_field_pos = {rule_name: set(range(len(rules))) for rule_name in rules}
-    while any(len(possible_field_pos[p]) > 1 for p in possible_field_pos):
-        for ticket in valid_tickets:
-            for rule_name in rules:
-                pos = set()
-                for i in possible_field_pos[rule_name]:
-                    if valid_value_for_rule(rules[rule_name], ticket[i]):
-                        pos.add(i)
-                    else:
-                        inv = True
-                if inv and len(pos) == 1:
-                    for rule_name2 in possible_field_pos:
-                        (e,) = pos
-                        if e in possible_field_pos[rule_name2]:
-                            possible_field_pos[rule_name2].remove(e)
-                possible_field_pos[rule_name] = pos
+    possible_field_pos = {name: set([i for i in range(len(rules)) if all(valid_value_for_rule(rules[name], ticket[i]) for ticket in valid_tickets)]) for name in rules}
 
+    for name in sorted(possible_field_pos, key=lambda p: len(possible_field_pos[p])):
+        if len(possible_field_pos[name]) == 1:
+            (v,) = possible_field_pos[name]
+            for name_to_remove in possible_field_pos:
+                if name != name_to_remove and v in possible_field_pos[name_to_remove]:
+                    possible_field_pos[name_to_remove].remove(v)
     ret = 1
     for rule in possible_field_pos:
         if rule.startswith('departure'):
